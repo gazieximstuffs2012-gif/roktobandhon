@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রক্তবন্ধন - স্মার্ট ক্যাম্প ও ডোনার ম্যানেজমেন্ট</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Noto Sans Bengali', sans-serif; background-color: #fcfcfc; }
+        .animate-marquee { display: inline-block; animation: marquee 15s linear infinite; }
+        @keyframes marquee { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+        @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Navigation -->
+    <nav class="bg-[#C4161C] text-white shadow-xl sticky top-0 z-[1000] no-print">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="showPage('dashboard')">
+                <i data-lucide="droplet" class="fill-white"></i>
+                <h1 class="text-2xl font-black tracking-tighter">রক্তবন্ধন</h1>
+            </div>
+            <div class="hidden md:flex gap-6 font-bold items-center">
+                <button onclick="showPage('dashboard')" class="hover:text-red-200">হোম</button>
+                <button onclick="showPage('donorList')" class="hover:text-red-200">রক্তদাতা</button>
+                <button onclick="showPage('campList')" class="hover:text-red-200">ব্লাড ক্যাম্প</button>
+                <button onclick="showPage('donorLogin')" class="hover:text-red-200">লগইন</button>
+                <button onclick="showPage('register')" class="bg-white text-[#C4161C] px-4 py-2 rounded-xl hover:bg-red-50 transition-colors">রেজিস্ট্রেশন</button>
+                <button onclick="showPage('adminLogin')" class="p-2 bg-black/20 rounded-full hover:bg-black/40 transition-colors" title="অ্যাডমিন প্যানেল"><i data-lucide="shield-check"></i></button>
+            </div>
+            <button class="md:hidden p-2" onclick="toggleMobileMenu()">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden bg-[#A31217] p-4 space-y-3 md:hidden border-t border-red-400/30">
+            <button onclick="showPage('dashboard'); toggleMobileMenu()" class="block w-full text-left font-bold py-2">হোম</button>
+            <button onclick="showPage('donorList'); toggleMobileMenu()" class="block w-full text-left font-bold py-2">রক্তদাতা</button>
+            <button onclick="showPage('campList'); toggleMobileMenu()" class="block w-full text-left font-bold py-2">ব্লাড ক্যাম্প</button>
+            <button onclick="showPage('donorLogin'); toggleMobileMenu()" class="block w-full text-left font-bold py-2">লগইন</button>
+            <button onclick="showPage('register'); toggleMobileMenu()" class="block w-full text-left font-bold py-2">রেজিস্ট্রেশন</button>
+            <button onclick="showPage('adminLogin'); toggleMobileMenu()" class="block w-full text-left font-bold py-2">অ্যাডমিন প্যানেল</button>
+        </div>
+    </nav>
+
+    <!-- App Container -->
+    <main id="app-content" class="container mx-auto px-4 py-8 min-h-[60vh]">
+        <!-- Content injected here -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 px-4 mt-20 no-print">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div>
+                <h3 class="text-2xl font-black mb-4 flex items-center gap-2"><i data-lucide="droplet" class="text-red-600"></i> রক্তবন্ধন</h3>
+                <p class="text-gray-400 font-medium leading-relaxed">জরুরি মুহূর্তে রক্তদাতার খোঁজ সহজ করার জন্য আমাদের এই ক্ষুদ্র প্রচেষ্টা।</p>
+            </div>
+            <div>
+                <h4 class="text-xl font-bold mb-4 border-b border-gray-800 pb-2">অ্যাডমিন প্রোফাইল</h4>
+                <div class="space-y-2 text-gray-400">
+                    <p class="font-bold text-white text-lg">মোঃ সানজিদুল ইসলাম</p>
+                    <p>মোবাইল: ০১৯০৯৫৪৯৫৪২</p>
+                    <p>প্রতিষ্ঠাতা ও অ্যাডমিন</p>
+                </div>
+            </div>
+            <div class="md:text-right">
+                <p class="text-gray-500">© ২০২৪-২০২৬ রক্তবন্ধন প্ল্যাটফর্ম</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Templates -->
+    <script id="dashboard-tpl" type="text/template">
+        <div class="animate-fade-in space-y-8">
+            <!-- Marquee -->
+            <div class="bg-red-50 border-l-4 border-red-600 p-4 rounded-r-xl overflow-hidden shadow-sm">
+                <div class="animate-marquee whitespace-nowrap text-red-600 font-bold italic">রক্তবন্ধন প্ল্যাটফর্মে আপনাকে স্বাগতম। এক ব্যাগ রক্ত একটি জীবন বাঁচাতে পারে। আমাদের চলমান ব্লাড ক্যাম্পগুলো সম্পর্কে জানতে "ব্লাড ক্যাম্প" অপশনে ক্লিক করুন।</div>
+            </div>
+
+            <!-- Emergency Notices -->
+            <div id="emergency-section" class="hidden animate-fade-in">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="relative flex h-3 w-3">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                    </span>
+                    <h3 class="text-xl font-black text-red-600 uppercase tracking-tight">জরুরি রক্ত রিকোয়েস্ট (নোটিশ বোর্ড)</h3>
+                </div>
+                <div id="emergency-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center">
+                    <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest">মোট রক্তদাতা</p>
+                    <h2 id="stat-total" class="text-3xl font-black text-red-600">0</h2>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center">
+                    <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest">সক্রিয় ডোনার</p>
+                    <h2 id="stat-active" class="text-3xl font-black text-green-600">0</h2>
+                </div>
+                <div onclick="showPage('campList')" class="bg-white p-6 rounded-3xl shadow-sm border border-blue-100 text-center cursor-pointer hover:bg-blue-50 transition-all group">
+                    <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest group-hover:text-blue-600">চলমান ক্যাম্প</p>
+                    <h2 id="stat-camps" class="text-3xl font-black text-blue-600">0</h2>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center">
+                    <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest">জরুরি রিকোয়েস্ট</p>
+                    <h2 id="stat-requests" class="text-3xl font-black text-orange-600">0</h2>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div onclick="showPage('register')" class="bg-red-600 text-white p-10 rounded-[40px] shadow-2xl cursor-pointer hover:scale-[1.02] transition-all relative overflow-hidden group">
+                    <h2 class="text-3xl font-black mb-2 relative z-10">রেজিস্ট্রেশন</h2>
+                    <p class="opacity-80 relative z-10 font-medium">নতুন কার্ড ও ইউনিক আইডি তৈরি করুন</p>
+                    <i data-lucide="user-plus" class="absolute -right-4 -bottom-4 w-32 h-32 opacity-10"></i>
+                </div>
+                <div onclick="showPage('donorList')" class="bg-white border-4 border-red-600 text-red-600 p-10 rounded-[40px] shadow-xl cursor-pointer hover:scale-[1.02] transition-all relative overflow-hidden group">
+                    <h2 class="text-3xl font-black mb-2 relative z-10">ডোনার লিস্ট</h2>
+                    <p class="text-gray-500 relative z-10 font-medium">এলাকা ভিত্তিক রক্তদাতা খুঁজুন</p>
+                    <i data-lucide="search" class="absolute -right-4 -bottom-4 w-32 h-32 opacity-5"></i>
+                </div>
+            </div>
+        </div>
+
+            <!-- Vision Section -->
+            <div class="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100">
+                <h3 class="text-2xl font-black text-gray-800 mb-6 flex items-center gap-3">
+                    <i data-lucide="eye" class="text-red-600"></i> আমাদের ভিশন ও লক্ষ্য
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center font-bold">১</div>
+                        <h4 class="font-bold text-lg text-gray-800">সহজ যোগাযোগ</h4>
+                        <p class="text-sm text-gray-500 leading-relaxed">জরুরি মুহূর্তে রক্তের জন্য দালালের খপ্পরে না পড়ে সরাসরি দাতার সাথে যোগাযোগ করা।</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center font-bold">২</div>
+                        <h4 class="font-bold text-lg text-gray-800">স্বেচ্ছাসেবা বৃদ্ধি</h4>
+                        <p class="text-sm text-gray-500 leading-relaxed">তরুণ প্রজন্মকে রক্তদানে উৎসাহিত করা এবং মানবিক সমাজ গড়ে তোলা।</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center font-bold">৩</div>
+                        <h4 class="font-bold text-lg text-gray-800">ডিজিটাল প্রোফাইল</h4>
+                        <p class="text-sm text-gray-500 leading-relaxed">রক্ত দাতার ডিজিটাল পরিচয়পত্র নিশ্চিত করা যা তাদের গর্বের প্রতীক হবে।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script id="adminPanel-tpl" type="text/template">
+        <div class="animate-fade-in space-y-8">
+            <div class="flex justify-between items-center bg-white p-6 rounded-[30px] border">
+                <div>
+                    <h2 class="text-2xl font-black">ম্যানেজমেন্ট প্যানেল</h2>
+                    <p class="text-xs text-gray-400 tracking-wider">রক্তদাতা, ক্যাম্প ও রিকোয়েস্ট নিয়ন্ত্রণ করুন</p>
+                </div>
+                <button onclick="showPage('dashboard')" class="bg-red-50 text-red-600 px-6 py-2 rounded-xl font-bold hover:bg-red-100 transition-colors">প্রস্থান</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex gap-2 overflow-x-auto pb-2">
+                <button onclick="showAdminTab('request')" class="admin-tab active bg-red-600 text-white px-6 py-2 rounded-full font-bold whitespace-nowrap" id="tab-request">রিকোয়েস্ট তৈরি</button>
+                <button onclick="showAdminTab('camp')" class="admin-tab bg-gray-100 text-gray-500 px-6 py-2 rounded-full font-bold whitespace-nowrap" id="tab-camp">ক্যাম্প পরিচালনা</button>
+                <button onclick="showAdminTab('donors')" class="admin-tab bg-gray-100 text-gray-500 px-6 py-2 rounded-full font-bold whitespace-nowrap" id="tab-donors">রক্তদাতা তালিকা</button>
+            </div>
+
+            <!-- Emergency Request Form -->
+            <div id="admin-req-section" class="bg-red-600 p-8 rounded-[40px] text-white shadow-2xl">
+                <h3 class="text-xl font-black mb-6 flex items-center gap-2 border-b border-white/20 pb-4"><i data-lucide="bell-ring"></i> জরুরি রক্ত রিকোয়েস্ট তৈরি করুন</h3>
+                <form onsubmit="createEmergencyRequest(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <input required id="req-patient" class="p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="রোগীর নাম">
+                        <input required id="req-problem" class="p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="সমস্যা (অপারেশন/দুর্ঘটনা)">
+                        <select id="req-group" class="p-4 bg-white/20 rounded-2xl outline-none border border-white/30 font-bold">
+                            <option value="A+" class="text-black">A+</option><option value="B+" class="text-black">B+</option><option value="O+" class="text-black">O+</option><option value="AB+" class="text-black">AB+</option>
+                            <option value="A-" class="text-black">A-</option><option value="B-" class="text-black">B-</option><option value="O-" class="text-black">O-</option><option value="AB-" class="text-black">AB-</option>
+                        </select>
+                        <input required id="req-hemoglobin" class="p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="হিমোগ্লোবিন (যেমন ৮%)">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <input required id="req-amount" class="p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="পরিমাণ (যেমন ২ ব্যাগ)">
+                        <input required id="req-date" type="date" class="p-4 bg-white/20 rounded-2xl outline-none border border-white/30 text-white">
+                        <input required id="req-time" type="time" class="p-4 bg-white/20 rounded-2xl outline-none border border-white/30 text-white">
+                        <input required id="req-contact" class="p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="যোগাযোগ নম্বর">
+                    </div>
+                    <input required id="req-location" class="w-full p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="হাসপাতাল ও ঠিকানা">
+                    <button class="w-full bg-white text-red-600 p-4 rounded-2xl font-black shadow-xl uppercase">ড্যাশবোর্ড এ রিকোয়েস্ট পোস্ট করুন</button>
+                </form>
+                
+                <div class="mt-8 bg-white/10 rounded-3xl overflow-hidden">
+                    <div class="p-4 border-b border-white/10 font-bold text-sm uppercase">চলমান জরুরি রিকোয়েস্ট</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <tbody id="admin-request-list" class="divide-y divide-white/5"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blood Camp Form -->
+            <div id="admin-camp-section" class="hidden bg-blue-600 p-8 rounded-[40px] text-white shadow-2xl">
+                <h3 class="text-xl font-black mb-6 flex items-center gap-2 border-b border-white/20 pb-4"><i data-lucide="map-pin"></i> নতুন ব্লাড ক্যাম্প যোগ করুন</h3>
+                <form onsubmit="createCamp(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input required id="camp-title" class="p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="ক্যাম্পের নাম">
+                        <input required id="camp-location" class="p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="ক্যাম্পের স্থান/হাসপাতাল">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input required id="camp-date" type="date" class="p-4 bg-white/20 rounded-2xl outline-none border border-white/30 text-white">
+                        <input required id="camp-time" class="p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="সময় (যেমন সকাল ১০টা)">
+                        <input required id="camp-organizer" class="p-4 bg-white/20 rounded-2xl placeholder:text-white/60 outline-none border border-white/30" placeholder="আয়োজক">
+                    </div>
+                    <button class="w-full bg-white text-blue-600 p-4 rounded-2xl font-black shadow-xl uppercase">ক্যাম্প তালিকাভুক্ত করুন</button>
+                </form>
+
+                <div class="mt-8 bg-white/10 rounded-3xl overflow-hidden">
+                    <div class="p-4 border-b border-white/10 font-bold text-sm uppercase">সংরক্ষিত ক্যাম্প তালিকা</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <tbody id="admin-camp-list" class="divide-y divide-white/5"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Donor Management Table -->
+            <div id="admin-donors-section" class="hidden bg-white rounded-[40px] shadow-sm border overflow-hidden">
+                <div class="p-6 border-b bg-gray-50 flex justify-between items-center text-gray-800">
+                    <h4 class="font-black uppercase tracking-widest text-sm">নিবন্ধিত রক্তদাতা</h4>
+                    <span id="admin-count" class="bg-gray-200 px-3 py-1 rounded-full text-xs font-bold"></span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="p-6 text-xs font-bold text-gray-400 uppercase">ডোনার তথ্য</th>
+                                <th class="p-6 text-xs font-bold text-gray-400 uppercase">গ্রুপ</th>
+                                <th class="p-6 text-xs font-bold text-gray-400 uppercase text-center">একশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-donor-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script id="campList-tpl" type="text/template">
+        <div class="space-y-8 animate-fade-in">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-black text-gray-800">চলমান ব্লাড ক্যাম্প</h2>
+                <p class="text-gray-400 font-bold">বর্তমানে আমাদের নির্ধারিত ক্যাম্পগুলোর তালিকা</p>
+            </div>
+            
+            <div id="camp-display-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Camps dynamically loaded here -->
+            </div>
+
+            <div id="no-camp-msg" class="hidden text-center py-20">
+                <i data-lucide="calendar-off" class="mx-auto w-16 h-16 text-gray-200 mb-4"></i>
+                <p class="text-gray-400 font-bold uppercase tracking-widest">বর্তমানে কোনো ক্যাম্প চলমান নেই</p>
+            </div>
+        </div>
+    </script>
+
+    <!-- Basic UI templates (Register, Login, Donor List, Profile, ID Card, etc. are kept same but with necessary JS updates) -->
+    <script id="register-tpl" type="text/template">
+        <div class="max-w-2xl mx-auto bg-white p-8 rounded-[40px] shadow-2xl animate-fade-in">
+            <h2 class="text-2xl font-black text-center mb-6">রক্তদাতা নিবন্ধন</h2>
+            <form onsubmit="handleRegister(event)" class="space-y-4">
+                <div class="flex flex-col items-center mb-4">
+                    <div id="photo-preview" onclick="document.getElementById('file-input').click()" class="w-24 h-24 bg-gray-50 rounded-full border-2 border-dashed border-red-200 flex items-center justify-center cursor-pointer overflow-hidden">
+                        <i data-lucide="camera" class="text-gray-300"></i>
+                    </div>
+                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="previewImage(this)">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input required id="reg-name" class="p-4 bg-gray-50 rounded-2xl outline-none" placeholder="আপনার পুরো নাম">
+                    <select id="reg-group" class="p-4 bg-gray-50 rounded-2xl outline-none font-bold">
+                        <option value="A+">A+</option><option value="B+">B+</option><option value="O+">O+</option><option value="AB+">AB+</option>
+                        <option value="A-">A-</option><option value="B-">B-</option><option value="O-">O-</option><option value="AB-">AB-</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input required id="reg-phone" class="p-4 bg-gray-50 rounded-2xl outline-none" placeholder="মোবাইল নম্বর">
+                    <input required id="reg-area" class="p-4 bg-gray-50 rounded-2xl outline-none" placeholder="এলাকা/জেলা">
+                </div>
+                <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+                    <p class="text-xs font-bold text-red-600 mb-2 uppercase tracking-tighter">তথ্য আপডেটের জন্য পিন সেট করুন (৪ সংখ্যা)</p>
+                    <input required id="reg-pin" type="password" maxlength="4" class="w-full p-4 bg-white rounded-xl outline-none text-center font-black tracking-widest" placeholder="১২৩৪">
+                </div>
+                <button type="submit" class="w-full bg-red-600 text-white p-4 rounded-2xl font-black text-lg shadow-xl">নিবন্ধন সম্পন্ন করুন</button>
+            </form>
+        </div>
+    </script>
+
+    <script id="donorLogin-tpl" type="text/template">
+        <div class="max-w-md mx-auto bg-white p-10 rounded-[40px] shadow-2xl animate-fade-in text-center">
+            <h2 class="text-2xl font-black mb-2">প্রোফাইল লগইন</h2>
+            <p class="text-sm text-gray-400 mb-8 font-bold uppercase tracking-widest">আইডি ও পিন দিয়ে প্রবেশ করুন</p>
+            <form onsubmit="handleDonorLogin(event)" class="space-y-4 text-left">
+                <input required id="login-id" class="w-full p-4 bg-gray-50 rounded-2xl outline-none uppercase" placeholder="ডোনার আইডি (RB-XXXX)">
+                <input required id="login-pin" type="password" maxlength="4" class="w-full p-4 bg-gray-50 rounded-2xl outline-none text-center tracking-widest font-black" placeholder="পিন কোড">
+                <button type="submit" class="w-full bg-red-600 text-white p-4 rounded-2xl font-black shadow-lg">লগইন</button>
+            </form>
+        </div>
+    </script>
+
+    <script id="donorList-tpl" type="text/template">
+        <div class="space-y-8 animate-fade-in">
+            <h2 class="text-3xl font-black text-gray-800 text-center">রক্তদাতার তালিকা</h2>
+            <div class="max-w-xl mx-auto relative group">
+                <input type="text" id="donor-search" onkeyup="filterDonors()" placeholder="গ্রুপ বা এলাকা লিখে খুঁজুন..." class="w-full p-5 pl-14 bg-white border-2 border-red-50 rounded-[25px] shadow-sm outline-none focus:border-red-600 transition-all text-lg font-medium">
+                <i data-lucide="search" class="absolute left-6 top-1/2 -translate-y-1/2 text-red-600"></i>
+            </div>
+            <div id="list-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
+    </script>
+
+    <script id="adminLogin-tpl" type="text/template">
+        <div class="max-w-md mx-auto bg-white p-12 rounded-[45px] shadow-2xl text-center animate-fade-in">
+            <i data-lucide="shield-check" class="w-16 h-16 mx-auto text-red-600 mb-6"></i>
+            <h2 class="text-2xl font-black mb-8">অ্যাডমিন প্যানেল</h2>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-6">
+                <input id="admin-pin" type="password" maxlength="4" placeholder="পিন কোড" class="w-full p-6 bg-gray-50 rounded-2xl text-center text-3xl font-black tracking-[10px] outline-none border-none">
+                <button class="w-full bg-red-600 text-white p-5 rounded-2xl font-black shadow-xl">প্রবেশ করুন</button>
+            </form>
+        </div>
+    </script>
+
+    <script id="profile-tpl" type="text/template">
+        <div id="profile-area" class="max-w-2xl mx-auto bg-white p-8 rounded-[40px] shadow-2xl animate-fade-in"></div>
+    </script>
+
+    <script id="idcard-tpl" type="text/template">
+        <div class="flex flex-col items-center py-10 animate-fade-in">
+            <div id="id-card-element" class="w-[360px] bg-white rounded-[50px] id-card-shadow overflow-hidden border-[8px] border-red-600 relative">
+                <div class="bg-red-600 h-32 flex flex-col items-center justify-center p-6 text-white text-center">
+                    <h4 class="text-3xl font-black tracking-tighter italic">রক্তবন্ধন</h4>
+                    <p class="text-[8px] tracking-[5px] uppercase opacity-80 font-bold mt-1">Digital Identity Card</p>
+                </div>
+                <div class="px-8 pb-8 flex flex-col items-center -mt-16">
+                    <div class="w-32 h-32 bg-white p-2 rounded-full shadow-2xl border-4 border-white">
+                        <div class="w-full h-full bg-gray-100 rounded-full overflow-hidden flex items-center justify-center">
+                            <img id="card-photo" src="" class="w-full h-full object-cover hidden">
+                            <i id="card-icon" data-lucide="user" class="text-gray-200 w-16 h-16"></i>
+                        </div>
+                    </div>
+                    <h2 id="card-name" class="mt-4 text-2xl font-black text-gray-800 text-center uppercase tracking-tight"></h2>
+                    <div id="card-group" class="mt-2 bg-red-600 text-white px-10 py-1 rounded-full font-black text-3xl shadow-lg"></div>
+                    <div class="w-full mt-6 space-y-3 text-center border-y border-gray-100 py-4">
+                        <div>
+                            <p class="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">Donor ID</p>
+                            <div id="card-id-num" class="text-xl font-black text-gray-900 bg-gray-50 px-4 py-1 rounded-xl inline-block border"></div>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</p>
+                            <p id="card-phone" class="text-lg font-bold text-gray-800"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Donations</p>
+                            <div class="flex items-center justify-center gap-2 mt-1">
+                                <i data-lucide="award" class="text-orange-500 w-4 h-4"></i>
+                                <span id="card-count" class="text-lg font-black text-gray-800 italic"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full mt-6 flex flex-col items-center">
+                        <div class="signature-font text-3xl text-gray-900 mb-0 leading-none">Sanjidul</div>
+                        <div class="w-32 h-[1px] bg-gray-300 my-1"></div>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Authorized Signature (Admin)</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 py-2 text-center">
+                    <p class="text-[7px] font-black text-gray-300 uppercase tracking-[3px]">www.roktobandhon.com</p>
+                </div>
+            </div>
+            <div class="mt-8 flex flex-col gap-4 no-print w-full max-w-[360px]">
+                <button onclick="window.print()" class="bg-gray-900 text-white px-8 py-4 rounded-2xl font-black flex items-center justify-center gap-2 shadow-xl">
+                    <i data-lucide="printer"></i> প্রিন্ট আইডি কার্ড
+                </button>
+                <button onclick="showPage('dashboard')" class="text-gray-400 font-bold hover:text-red-600 transition-colors">হোম এ ফিরে যান</button>
+            </div>
+        </div>
+    </script>
+
+    <script>
+        // Data State
+        let donors = JSON.parse(localStorage.getItem('rb_donors')) || [];
+        let emergencyRequests = JSON.parse(localStorage.getItem('rb_requests')) || [];
+        let bloodCamps = JSON.parse(localStorage.getItem('rb_camps')) || [];
+        let tempPhotoData = null;
+        let currentUser = null;
+        let isAdmin = false;
+
+        function saveData() {
+            localStorage.setItem('rb_donors', JSON.stringify(donors));
+            localStorage.setItem('rb_requests', JSON.stringify(emergencyRequests));
+            localStorage.setItem('rb_camps', JSON.stringify(bloodCamps));
+        }
+
+        function showPage(pageId, data = null) {
+            const app = document.getElementById('app-content');
+            const template = document.getElementById(pageId + '-tpl');
+            if (!template) return;
+            app.innerHTML = template.innerHTML;
+            lucide.createIcons();
+
+            if (pageId === 'dashboard') {
+                updateStats();
+                renderEmergencyNotices();
+            } else if (pageId === 'donorList') {
+                renderDonorList();
+            } else if (pageId === 'adminPanel') {
+                renderAdminTabContent();
+            } else if (pageId === 'campList') {
+                renderCampList();
+            } else if (pageId === 'idcard' && data) {
+                renderIDCard(data);
+            } else if (pageId === 'profile' && currentUser) {
+                renderProfile();
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').innerText = donors.length;
+            document.getElementById('stat-active').innerText = donors.filter(d => d.status === 'সক্রিয়').length;
+            document.getElementById('stat-camps').innerText = bloodCamps.length;
+            document.getElementById('stat-requests').innerText = emergencyRequests.length;
+        }
+
+        // --- Emergency Requests ---
+        function renderEmergencyNotices() {
+            const section = document.getElementById('emergency-section');
+            const list = document.getElementById('emergency-list');
+            if (emergencyRequests.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+            list.innerHTML = emergencyRequests.map(req => `
+                <div class="bg-white border-2 border-red-100 p-6 rounded-[35px] shadow-md hover:border-red-600 transition-all animate-fade-in">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="bg-red-600 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-black">
+                            <span class="text-[8px] uppercase">Group</span>
+                            <span class="text-lg">${req.group}</span>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-black text-gray-900">${req.patient} এর জন্য রক্ত প্রয়োজন</h4>
+                            <p class="text-[10px] text-red-600 font-bold bg-red-50 inline-block px-2 py-0.5 rounded uppercase tracking-wider">জরুরি</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-y-2 text-xs text-gray-500 font-medium">
+                        <p><i data-lucide="activity" class="inline w-3 h-3 mr-1"></i> ${req.problem}</p>
+                        <p><i data-lucide="droplet" class="inline w-3 h-3 mr-1"></i> ${req.hemoglobin}</p>
+                        <p><i data-lucide="map-pin" class="inline w-3 h-3 mr-1"></i> ${req.location}</p>
+                        <p><i data-lucide="calendar" class="inline w-3 h-3 mr-1"></i> ${req.date} | ${req.time}</p>
+                    </div>
+                    <a href="tel:${req.contact}" class="mt-4 w-full bg-red-600 text-white p-3 rounded-xl font-black flex items-center justify-center gap-2 hover:bg-black transition-all shadow-lg">
+                        <i data-lucide="phone-call" size="16"></i> কল করুন: ${req.contact}
+                    </a>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // --- Blood Camps ---
+        function renderCampList() {
+            const list = document.getElementById('camp-display-list');
+            const empty = document.getElementById('no-camp-msg');
+            if (bloodCamps.length === 0) {
+                empty.classList.remove('hidden');
+                list.innerHTML = "";
+                return;
+            }
+            empty.classList.add('hidden');
+            list.innerHTML = bloodCamps.map(camp => `
+                <div class="bg-white p-8 rounded-[40px] shadow-sm border border-blue-50 relative overflow-hidden group hover:shadow-xl transition-all">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-all">
+                        <i data-lucide="map-pin" size="64"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-800 mb-2">${camp.title}</h3>
+                    <div class="space-y-3 mb-6">
+                        <p class="flex items-center gap-2 text-blue-600 font-bold"><i data-lucide="map-pin" size="18"></i> ${camp.location}</p>
+                        <div class="flex gap-4 text-sm text-gray-500 font-medium">
+                            <p class="flex items-center gap-2"><i data-lucide="calendar" size="16"></i> ${camp.date}</p>
+                            <p class="flex items-center gap-2"><i data-lucide="clock" size="16"></i> ${camp.time}</p>
+                        </div>
+                        <p class="text-xs text-gray-400">আয়োজক: <span class="font-bold text-gray-600">${camp.organizer}</span></p>
+                    </div>
+                    <div class="bg-blue-50 text-blue-700 p-3 rounded-2xl text-center text-xs font-black uppercase tracking-widest">সকল রক্তদাতার আমন্ত্রণ রইল</div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // --- Registration & Login ---
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    tempPhotoData = e.target.result;
+                    document.getElementById('photo-preview').innerHTML = `<img src="${tempPhotoData}" class="w-full h-full object-cover">`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const donorId = "RB-" + (1000 + Math.floor(Math.random() * 9000));
+            const newDonor = {
+                id: donorId,
+                name: document.getElementById('reg-name').value,
+                bloodGroup: document.getElementById('reg-group').value,
+                phone: document.getElementById('reg-phone').value,
+                area: document.getElementById('reg-area').value,
+                pin: document.getElementById('reg-pin').value,
+                photo: tempPhotoData,
+                status: 'সক্রিয়'
+            };
+            donors.push(newDonor);
+            saveData();
+            currentUser = newDonor;
+            showPage('idcard', newDonor);
+        }
+
+        function handleDonorLogin(e) {
+            e.preventDefault();
+            const id = document.getElementById('login-id').value.toUpperCase();
+            const pin = document.getElementById('login-pin').value;
+            const found = donors.find(d => d.id === id && d.pin === pin);
+            if (found) { currentUser = found; showPage('profile'); }
+            else { alert("ভুল তথ্য প্রদান করেছেন!"); }
+        }
+
+        // --- Admin Controls ---
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            if (document.getElementById('admin-pin').value === "2025") {
+                isAdmin = true;
+                showPage('adminPanel');
+            } else {
+                alert("অ্যাডমিন পিন ভুল!");
+            }
+        }
+
+        function showAdminTab(tabName) {
+            document.querySelectorAll('.admin-tab').forEach(t => {
+                t.classList.remove('bg-red-600', 'bg-blue-600', 'bg-gray-900', 'text-white');
+                t.classList.add('bg-gray-100', 'text-gray-500');
+            });
+            
+            const btn = document.getElementById('tab-' + tabName);
+            btn.classList.remove('bg-gray-100', 'text-gray-500');
+            btn.classList.add(tabName === 'camp' ? 'bg-blue-600' : (tabName === 'donors' ? 'bg-gray-900' : 'bg-red-600'), 'text-white');
+
+            document.getElementById('admin-req-section').classList.toggle('hidden', tabName !== 'request');
+            document.getElementById('admin-camp-section').classList.toggle('hidden', tabName !== 'camp');
+            document.getElementById('admin-donors-section').classList.toggle('hidden', tabName !== 'donors');
+        }
+
+        function createEmergencyRequest(e) {
+            e.preventDefault();
+            const req = {
+                id: Date.now(),
+                patient: document.getElementById('req-patient').value,
+                problem: document.getElementById('req-problem').value,
+                group: document.getElementById('req-group').value,
+                hemoglobin: document.getElementById('req-hemoglobin').value,
+                amount: document.getElementById('req-amount').value,
+                date: document.getElementById('req-date').value,
+                time: document.getElementById('req-time').value,
+                location: document.getElementById('req-location').value,
+                contact: document.getElementById('req-contact').value
+            };
+            emergencyRequests.unshift(req);
+            saveData();
+            renderAdminTabContent();
+            alert("রিকোয়েস্ট পোস্ট করা হয়েছে!");
+        }
+
+        function createCamp(e) {
+            e.preventDefault();
+            const camp = {
+                id: Date.now(),
+                title: document.getElementById('camp-title').value,
+                location: document.getElementById('camp-location').value,
+                date: document.getElementById('camp-date').value,
+                time: document.getElementById('camp-time').value,
+                organizer: document.getElementById('camp-organizer').value
+            };
+            bloodCamps.unshift(camp);
+            saveData();
+            renderAdminTabContent();
+            alert("ব্লাড ক্যাম্পের তথ্য সফলভাবে যোগ করা হয়েছে!");
+        }
+
+        function renderAdminTabContent() {
+            // Render Request List
+            const reqList = document.getElementById('admin-request-list');
+            reqList.innerHTML = emergencyRequests.map(r => `
+                <tr class="hover:bg-white/5">
+                    <td class="p-4">${r.patient} (${r.group})</td>
+                    <td class="p-4 text-center">
+                        <button onclick="deleteReq(${r.id})" class="text-white/50 hover:text-white"><i data-lucide="trash-2" size="16"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Render Camp List
+            const campAdminList = document.getElementById('admin-camp-list');
+            campAdminList.innerHTML = bloodCamps.map(c => `
+                <tr class="hover:bg-white/5">
+                    <td class="p-4 font-bold">${c.title}<br><span class="text-[10px] opacity-60 font-medium">${c.location}</span></td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteCamp(${c.id})" class="text-white/50 hover:text-white"><i data-lucide="trash-2" size="16"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Render Donors
+            const donorList = document.getElementById('admin-donor-list');
+            document.getElementById('admin-count').innerText = donors.length + " জন";
+            donorList.innerHTML = donors.map(d => `
+                <tr class="border-b">
+                    <td class="p-4">
+                        <div class="font-bold text-sm uppercase">${d.id}</div>
+                        <div class="text-gray-500 text-xs">${d.name}</div>
+                    </td>
+                    <td class="p-4 font-black text-red-600">${d.bloodGroup}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="deleteDonor('${d.id}')" class="text-red-300 hover:text-red-600"><i data-lucide="trash-2" size="18"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function deleteReq(id) { if(confirm("মুছে ফেলতে চান?")) { emergencyRequests = emergencyRequests.filter(r => r.id !== id); saveData(); renderAdminTabContent(); } }
+        function deleteCamp(id) { if(confirm("ক্যাম্পটি মুছে ফেলতে চান?")) { bloodCamps = bloodCamps.filter(c => c.id !== id); saveData(); renderAdminTabContent(); } }
+        function deleteDonor(id) { if(confirm("ডোনার ডিলিট করতে চান?")) { donors = donors.filter(d => d.id !== id); saveData(); renderAdminTabContent(); } }
+
+        // --- UI Rendering ---
+        function renderDonorList() {
+            const container = document.getElementById('list-container');
+            if(donors.length === 0) { container.innerHTML = `<p class="col-span-full text-center py-20 text-gray-400">কোনো রক্তদাতা নিবন্ধিত নেই</p>`; return; }
+            container.innerHTML = donors.map(d => `
+                <div data-group="${d.bloodGroup}" data-area="${d.area}" data-name="${d.name}" class="bg-white p-6 rounded-[35px] border border-gray-100 hover:shadow-xl transition-all text-center">
+                    <div class="w-16 h-16 mx-auto bg-gray-50 rounded-2xl overflow-hidden mb-4 border">
+                        ${d.photo ? `<img src="${d.photo}" class="w-full h-full object-cover">` : `<i data-lucide="user" class="p-4 text-gray-200"></i>`}
+                    </div>
+                    <h3 class="font-bold text-gray-800">${d.name}</h3>
+                    <div class="text-red-600 font-black">${d.bloodGroup}</div>
+                    <div class="text-[10px] text-gray-400 mb-4">${d.area}</div>
+                    <div class="flex gap-2">
+                        <a href="tel:${d.phone}" class="flex-1 bg-red-600 text-white p-3 rounded-xl hover:bg-black transition-all flex justify-center"><i data-lucide="phone" size="18"></i></a>
+                        <button onclick='showPage("idcard", ${JSON.stringify(d)})' class="flex-1 bg-gray-100 text-gray-400 p-3 rounded-xl hover:bg-red-600 hover:text-white transition-all flex justify-center"><i data-lucide="id-card" size="18"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function filterDonors() {
+            const query = document.getElementById('donor-search').value.toLowerCase();
+            document.querySelectorAll('#list-container > div').forEach(card => {
+                const group = card.getAttribute('data-group').toLowerCase();
+                const area = card.getAttribute('data-area').toLowerCase();
+                const name = card.getAttribute('data-name').toLowerCase();
+                card.classList.toggle('hidden', !(group.includes(query) || area.includes(query) || name.includes(query)));
+            });
+        }
+
+        function renderIDCard(data) {
+            document.getElementById('card-name').innerText = data.name;
+            document.getElementById('card-group').innerText = data.bloodGroup;
+            document.getElementById('card-id-num').innerText = "Donor ID: " + data.id;
+            if (data.photo) {
+                const img = document.getElementById('card-photo');
+                img.src = data.photo; img.classList.remove('hidden');
+                document.getElementById('card-icon').classList.add('hidden');
+            }
+        }
+
+        function renderProfile() {
+            const container = document.getElementById('profile-area');
+            container.innerHTML = `
+                <div class="flex justify-between mb-8">
+                    <h2 class="text-2xl font-black">ডোনার প্রোফাইল</h2>
+                    <button onclick="logout()" class="text-red-600 font-bold">লগ আউট</button>
+                </div>
+                <div class="space-y-6">
+                    <div class="flex items-center gap-6">
+                        <div class="w-24 h-24 bg-gray-50 rounded-3xl overflow-hidden border">
+                            ${currentUser.photo ? `<img src="${currentUser.photo}" class="w-full h-full object-cover">` : `<i data-lucide="user" class="p-8 text-gray-200"></i>`}
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">${currentUser.name}</h3>
+                            <p class="text-red-600 font-black uppercase tracking-widest">${currentUser.id} | ${currentUser.bloodGroup}</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-gray-50 rounded-2xl"><p class="text-[10px] text-gray-400 uppercase font-black">ফোন</p><p class="font-bold">${currentUser.phone}</p></div>
+                        <div class="p-4 bg-gray-50 rounded-2xl"><p class="text-[10px] text-gray-400 uppercase font-black">এলাকা</p><p class="font-bold">${currentUser.area}</p></div>
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="showPage('idcard', currentUser)" class="flex-1 bg-red-600 text-white p-4 rounded-2xl font-bold shadow-lg">আইডি কার্ড দেখুন</button>
+                        <button onclick="showPage('dashboard')" class="flex-1 bg-gray-100 text-gray-500 p-4 rounded-2xl font-bold">হোম এ যান</button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function logout() { currentUser = null; isAdmin = false; showPage('dashboard'); }
+        function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('hidden'); }
+
+        window.onload = () => showPage('dashboard');
+    </script>
+</body>
+</html>
